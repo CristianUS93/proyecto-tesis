@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "473301373069",
+    "project_id": "qarwash-9bd8e",
+    "storage_bucket": "qarwash-9bd8e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:473301373069:android:5a1614b05a207be9c852c4",
+        "android_client_info": {
+          "package_name": "com.codigo.flutter_tesis_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "473301373069-jn112o6mapvbom1o9hthk507oubi5ivq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.codigo.flutter_tesis_app",
+            "certificate_hash": "61221ee12b2224b6d00c5f534e55458e78b30612"
+          }
+        },
+        {
+          "client_id": "473301373069-dqbnjai4bol1kdlej2i7ba9574lpq3rh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrH2NryTS5tmOuZTZAY_wgNGS_Z3MsPso"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "473301373069-dqbnjai4bol1kdlej2i7ba9574lpq3rh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
