@@ -19,7 +19,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.yellow[700],
+        primaryColor: Colors.green,
+        primarySwatch: Colors.green,
       ),
       home: LandingPage(),
     );
@@ -31,32 +33,30 @@ class LandingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: Firebase.initializeApp(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(
-              child: Text("Error: ${snapshot.error}"),
-            ),
-          );
-        }
-        if (snapshot.connectionState == ConnectionState.done) {
-          return StreamBuilder(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.active) {
-                User user = snapshot.data;
-                if (user == null) {
-                  return LoginPage();
-                } else {
-                  return HomePage();
-                }
-              }
-              return LoadingScreen();
-            },
-          );
-        }
-        return LoadingScreen();
-      },
+      builder: (context, AsyncSnapshot<FirebaseApp> snapshot) {
+        return snapshot.hasError
+            ? Scaffold(
+              body: Center(
+                child: Text("Error: ${snapshot.error}"),
+              ),
+            )
+            : (snapshot.connectionState == ConnectionState.done)
+            ? StreamBuilder(
+                stream: FirebaseAuth.instance.authStateChanges(),
+                builder: (context, AsyncSnapshot<User> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.active) {
+                    User user = snapshot.data;
+                    if (user == null) {
+                      return LoginPage();
+                    } else {
+                      return HomePage();
+                    }
+                  }
+                  return LoadingScreen();
+                },
+              )
+            : LoadingScreen();
+      }
     );
   }
 }

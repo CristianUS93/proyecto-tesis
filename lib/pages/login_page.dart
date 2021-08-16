@@ -1,8 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginPage extends StatelessWidget {
+  static User userInfo;
+
   Future<UserCredential> signInWithGoogle(BuildContext context) async {
     final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
     final GoogleSignInAuthentication googleAuth =
@@ -13,49 +16,101 @@ class LoginPage extends StatelessWidget {
       idToken: googleAuth.idToken,
     );
 
-    final snackBarInit = SnackBar(
-      content: Text("Inicio de sesión exitoso!"),
-      backgroundColor: Colors.green,
-      duration: Duration(seconds: 3),
-    );
+
     final snackBarWrong = SnackBar(
-      content: Text("Su e-mail o contraseña no son correctos"),
+      content: Text("Ocurrió un error al conectarse"),
       backgroundColor: Colors.redAccent,
       duration: Duration(seconds: 3),
     );
 
     return await FirebaseAuth.instance
         .signInWithCredential(credential)
-        .whenComplete(() {
-      ScaffoldMessenger.of(context).showSnackBar(snackBarInit);
-    }).catchError((error) {
-      print(error);
-      ScaffoldMessenger.of(context).showSnackBar(snackBarWrong);
-    });
+        .then((value){
+          LoginPage.userInfo = value.user;
+        })
+        .catchError((error) {
+          print(error);
+          ScaffoldMessenger.of(context).showSnackBar(snackBarWrong);
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-          child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text("Inicia sesión con tu cuenta Google"),
-            SizedBox(height: 20),
-            ElevatedButton(
-              child: Text("Seleccionar cuenta"),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+      body: Stack(
+        children: [
+          Container(
+            height: MediaQuery.of(context).size.height,
+            child: Image.asset('assets/background_image.jpeg',
+              fit: BoxFit.cover,
+            ),
+          ),
+          Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            color: Colors.black54,
+          ),
+          Positioned(
+            top: 145,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              child: Center(
+                child: const Text("QARWASH",
+                  style: TextStyle(fontSize: 70, fontWeight: FontWeight.bold, color: Colors.black45),
+                ),
               ),
-              onPressed: () {
-                signInWithGoogle(context);
-              },
-            )
-          ],
-        ),
-      )),
+            ),
+          ),
+          Positioned(
+            top: 140,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              child: Center(
+                child: const Text("QARWASH",
+                  style: TextStyle(fontSize: 70, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 210,
+            right: 30,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              child: const Text("Conoce nuestro Callejón de Huaylas",
+                textAlign: TextAlign.right,
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 100,
+            child: Container(
+              height: 80,
+              width: MediaQuery.of(context).size.width,
+              child: ElevatedButton(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Inicia Sesión con Google",
+                      style: TextStyle(color: Colors.black, fontSize: 20),
+                    ),
+                    SizedBox(width: 15,),
+                    Image(image: AssetImage("assets/google_icon.png"),)
+                  ],
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                  primary: Colors.white,
+                ),
+                onPressed: () {
+                  signInWithGoogle(context);
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

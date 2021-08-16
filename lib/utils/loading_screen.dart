@@ -11,9 +11,14 @@ class LoadingScreen extends StatelessWidget {
           direction: Axis.vertical,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CupertinoActivityIndicator(),
+            CircularProgressIndicator(),
             SizedBox(height: 15,),
-            Text("Cargando..."),
+            Text("Cargando...",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),

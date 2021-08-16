@@ -7,6 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:flutter_tesis_app/models/directions_model.dart';
 
+// ignore: must_be_immutable
 class MapPage extends StatefulWidget {
   Position initPosition;
   LatLng finalPosition;
@@ -20,7 +21,6 @@ class _MapPageState extends State<MapPage> {
   Marker _from;
   Marker _to;
   Directions _info;
-  GoogleMapController _mapController;
 
   @override
   void initState() {
@@ -32,23 +32,20 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Como llegar"),
+        title: Text("UBÍCANOS",
+          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+        ),
       ),
       body: Stack(
         children: [
           GoogleMap(
               initialCameraPosition: CameraPosition(
-                target: LatLng(
-                  widget.initPosition.latitude,
-                  widget.initPosition.longitude,
-                ),
+                target: widget.finalPosition,
                 zoom: 15.0,
               ),
               myLocationButtonEnabled: true,
               myLocationEnabled: true,
-              onMapCreated: (GoogleMapController controller) {
-                _mapController = controller;
-              },
+              onMapCreated: (controller) {},
               markers: {
                 if (_from != null) _from,
                 if (_to != null) _to
@@ -63,7 +60,9 @@ class _MapPageState extends State<MapPage> {
                         .map((e) => LatLng(e.latitude, e.longitude))
                         .toList(),
                   ),
-              }),
+              },
+              
+            ),
         ],
       ),
     );
