@@ -1,54 +1,97 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter_tesis_app/pages/map_page.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_tesis_app/pages/home_page.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+
+import 'package:flutter_tesis_app/pages/map_page.dart';
 
 
 class DetailPage extends StatefulWidget {
   final DocumentSnapshot doc;
-
-  const DetailPage({@required this.doc});
+  final int index;
+  final String nameServices;
+  const DetailPage({@required this.doc, this.index, this.nameServices});
 
   @override
   _DetailPageState createState() => _DetailPageState();
 }
 
 class _DetailPageState extends State<DetailPage> {
+
   bool like = false;
   bool dislike = false;
   int likeNum;
   int dislikeNum;
 
+  List<Widget> listCircles = [];
+  List<dynamic> listImage = [];
+  int indexImage = 0;
+
   @override
   void initState() {
     likeNum = widget.doc['like'];
     dislikeNum = widget.doc['dislike'];
+    listImage = widget.doc['images'];
     getPref();
     super.initState();
   }
 
-  void getPref ()async{
-    SharedPreferences pref =await SharedPreferences.getInstance();
-    bool _like = (pref.getBool('like') ?? false);
-    bool _dislike = (pref.getBool('dislike') ?? false);
-    setState(() {
-      like = _like;
-      dislike = _dislike;
-    });
+  void getPref() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    if(widget.nameServices == "restaurante"){
+      List<String> _likelist = pref.getStringList('likelistRest');
+      List<String> _dislikelist = pref.getStringList('dislikelistRest');
+      if(_likelist != null && _likelist.isNotEmpty && _likelist[widget.index] == "T"){
+        setState(()=> like = true);
+      }else{
+        setState(()=> like = false);
+      }
+      if(_dislikelist != null && _dislikelist.isNotEmpty && _dislikelist[widget.index] == "T"){
+        setState(()=> dislike = true);
+      }else{
+        setState(()=> dislike = false);
+      }
+    }else if(widget.nameServices == "hoteles"){
+      List<String> _likelist = pref.getStringList('likelistHot');
+      List<String> _dislikelist = pref.getStringList('dislikelistHot');
+      if(_likelist != null && _likelist.isNotEmpty && _likelist[widget.index] == "T"){
+        setState(()=> like = true);
+      }else{
+        setState(()=> like = false);
+      }
+      if(_dislikelist != null && _dislikelist.isNotEmpty && _dislikelist[widget.index] == "T"){
+        setState(()=> dislike = true);
+      }else{
+        setState(()=> dislike = false);
+      }
+    }else if(widget.nameServices == "lugaresTuristicos"){
+      List<String> _likelist = pref.getStringList('likelistSite');
+      List<String> _dislikelist = pref.getStringList('dislikelistSite');
+      if(_likelist != null && _likelist.isNotEmpty && _likelist[widget.index] == "T"){
+        setState(()=> like = true);
+      }else{
+        setState(()=> like = false);
+      }
+      if(_dislikelist != null && _dislikelist.isNotEmpty && _dislikelist[widget.index] == "T"){
+        setState(()=> dislike = true);
+      }else{
+        setState(()=> dislike = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-    final scrollController = ScrollController();
-    
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.doc['nombre'],
+        title: Text(
+          widget.doc['nombre'],
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
       ),
@@ -57,17 +100,38 @@ class _DetailPageState extends State<DetailPage> {
         children: [
           Expanded(
             flex: 1,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              controller: scrollController,
-              itemCount: widget.doc['images'].length,
-              itemBuilder: (context, index) {
-                return Image.network(
-                  widget.doc['images'][index],
-                  width: media.size.width,
-                  fit: BoxFit.cover,
-                );
-              },
+            child: PageView.builder(
+                itemCount: widget.doc['images'].length,
+                onPageChanged: (index){
+                  setState(() {
+                    indexImage = index;
+                  });
+                },
+                itemBuilder: (context, index) {
+                  return Container(
+                    color: Colors.grey[400],
+                    child: Image.network(
+                      widget.doc['images'][index],
+                      width: media.size.width,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      },
+                    ),
+                  );
+                }),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for(int i = 0; i<listImage.length; i++)
+                  CircleWidget(color: i==indexImage ? Colors.yellow : Colors.white)
+              ]
             ),
           ),
           Padding(
@@ -93,11 +157,15 @@ class _DetailPageState extends State<DetailPage> {
                     ),
                     child: IconButton(
                       onPressed: _like,
-                      icon: Icon(like ? Icons.thumb_up : Icons.thumb_up_outlined),
+                      icon:
+                          Icon(like ? Icons.thumb_up : Icons.thumb_up_outlined),
                     ),
                   ),
-                  SizedBox(height: 10,),
-                  Text(likeNum.toString(),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    likeNum.toString(),
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                   ),
                 ],
@@ -150,18 +218,25 @@ class _DetailPageState extends State<DetailPage> {
                     ),
                     child: IconButton(
                       onPressed: _dislike,
-                      icon: Icon(dislike ? Icons.thumb_down : Icons.thumb_down_outlined),
+                      icon: Icon(dislike
+                          ? Icons.thumb_down
+                          : Icons.thumb_down_outlined),
                     ),
                   ),
-                  SizedBox(height: 10,),
-                  Text(dislikeNum.toString(),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    dislikeNum.toString(),
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                   ),
                 ],
               ),
             ],
           ),
-          SizedBox(height: 20,),
+          SizedBox(
+            height: 20,
+          ),
           Expanded(
             flex: 1,
             child: Container(
@@ -185,17 +260,20 @@ class _DetailPageState extends State<DetailPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 10,),
+                  SizedBox(
+                    height: 10,
+                  ),
                   Container(
-                    height: MediaQuery.of(context).size.height * 0.23,
+                    height: MediaQuery.of(context).size.height * 0.22,
                     child: SingleChildScrollView(
                       physics: ScrollPhysics(),
-                      child: Text(widget.doc['descripcion'] == ""
-                          ? "Aún no se agreaga una descripción"
-                          : widget.doc['descripcion'],
-                          textAlign: TextAlign.justify,
-                          style: TextStyle(fontSize: 18),
-                        ),
+                      child: Text(
+                        widget.doc['descripcion'] == ""
+                            ? "Aún no se agreaga una descripción"
+                            : widget.doc['descripcion'],
+                        textAlign: TextAlign.justify,
+                        style: TextStyle(fontSize: 18),
+                      ),
                     ),
                   ),
                 ],
@@ -207,62 +285,140 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
-  void _like()async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
+  void _like() async {
     setState(() {
-      if(like){
+      if (like) {
         like = false;
-        likeNum --;
-        widget.doc.reference.update({
-          'like': widget.doc['like'] - 1 
-        });
-      }else{
+        likeNum--;
+        widget.doc.reference.update({'like': widget.doc['like'] - 1});
+        likeFalse();
+      } else {
         like = true;
-        likeNum ++;
-        widget.doc.reference.update({
-          'like': widget.doc['like'] + 1 
-        });
-        if(dislike){
+        likeNum++;
+        widget.doc.reference.update({'like': widget.doc['like'] + 1});
+        likeTrue();
+        if (dislike) {
           dislike = false;
-          dislikeNum--;
-          widget.doc.reference.update({
-            'dislike': widget.doc['dislike'] - 1 
-        });
-        }
-      }  
-    });
-    await pref.setBool('like', like);
-    await pref.setBool('dislike', dislike);
-    print(like);
-  }
-
-  void _dislike()async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    setState(() {
-      if(dislike){
-        dislike = false;
-        dislikeNum--;
-        widget.doc.reference.update({
-          'dislike': widget.doc['dislike'] - 1 
-        });
-      }else{
-        dislike = true;
-        dislikeNum++;
-        widget.doc.reference.update({
-          'dislike': widget.doc['dislike'] + 1 
-        });
-        if(like){
-          like = false;
-          likeNum--;
-          widget.doc.reference.update({
-            'like': widget.doc['like'] - 1 
-        });
+          dislikeFalse();
+          if(widget.doc['dislike']>0){
+            dislikeNum--;
+            widget.doc.reference.update({'dislike': widget.doc['dislike'] - 1});
+          }
         }
       }
     });
-    await pref.setBool('like', like);
-    await pref.setBool('dislike', dislike);
-    print(dislike);
   }
 
+  void _dislike() async {
+    setState(() {
+      if (dislike) {
+        dislike = false;
+        dislikeNum--;
+        widget.doc.reference.update({'dislike': widget.doc['dislike'] - 1});
+        dislikeFalse();
+      } else {
+        dislike = true;
+        dislikeNum++;
+        widget.doc.reference.update({'dislike': widget.doc['dislike'] + 1});
+        dislikeTrue();
+        if (like) {
+          like = false;
+          likeFalse();
+          if(widget.doc['like']>0){
+            likeNum--;
+            widget.doc.reference.update({'like': widget.doc['like'] - 1});
+          }
+        }
+      }
+    });
+  }
+
+  void likeTrue()async{
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    if(widget.nameServices == "restaurante"){
+      HomePage.likeRest[widget.index] = "T";
+      await pref.setStringList('likelistRest', HomePage.likeRest);
+      print(HomePage.likeRest);
+    }else if(widget.nameServices == "hoteles"){
+      HomePage.likeHot[widget.index] = "T";
+      await pref.setStringList('likelistHot', HomePage.likeHot);
+      print(HomePage.likeHot);
+    }else if(widget.nameServices == "lugaresTuristicos"){
+      HomePage.likeSite[widget.index] = "T";
+      await pref.setStringList('likelistSite', HomePage.likeSite);
+      print(HomePage.likeSite);
+    }
+  }
+  void likeFalse()async{
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    if(widget.nameServices == "restaurante"){
+      HomePage.likeRest[widget.index] = "F";
+      await pref.setStringList('likelistRest', HomePage.likeRest);
+      print(HomePage.likeRest);
+    }else if(widget.nameServices == "hoteles"){
+      HomePage.likeHot[widget.index] = "F";
+      await pref.setStringList('likelistHot', HomePage.likeHot);
+      print(HomePage.likeHot);
+    }else if(widget.nameServices == "lugaresTuristicos"){
+      HomePage.likeSite[widget.index] = "F";
+      await pref.setStringList('likelistSite', HomePage.likeSite);
+      print(HomePage.likeSite);
+    }
+  }
+
+
+  void dislikeTrue()async{
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    if(widget.nameServices == "restaurante"){
+      HomePage.dislikeRest[widget.index] = "T";
+      await pref.setStringList('dislikelistRest', HomePage.dislikeRest);
+      print(HomePage.dislikeRest);
+    }else if(widget.nameServices == "hoteles"){
+      HomePage.dislikeHot[widget.index] = "T";
+      await pref.setStringList('dislikelistHot', HomePage.dislikeHot);
+      print(HomePage.dislikeHot);
+    }else if(widget.nameServices == "lugaresTuristicos"){
+      HomePage.dislikeSite[widget.index] = "T";
+      await pref.setStringList('dislikelistSite', HomePage.dislikeSite);
+      print(HomePage.dislikeSite);
+    }
+  }
+  void dislikeFalse()async{
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    if(widget.nameServices == "restaurante"){
+      HomePage.dislikeRest[widget.index] = "F";
+      await pref.setStringList('dislikelistRest', HomePage.dislikeRest);
+      print(HomePage.dislikeRest);
+    }else if(widget.nameServices == "hoteles"){
+      HomePage.dislikeHot[widget.index] = "F";
+      await pref.setStringList('dislikelistHot', HomePage.dislikeHot);
+      print(HomePage.dislikeHot);
+    }else if(widget.nameServices == "lugaresTuristicos"){
+      HomePage.dislikeSite[widget.index] = "F";
+      await pref.setStringList('dislikelistSite', HomePage.dislikeSite);
+      print(HomePage.dislikeSite);
+    }
+  }
+
+}
+
+class CircleWidget extends StatelessWidget {
+  const CircleWidget({
+    Key key,
+    @required this.color,
+  }) : super(key: key);
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 15,
+      width: 15,
+      margin: EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(8),
+      ),
+    );
+  }
 }

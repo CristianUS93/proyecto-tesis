@@ -1,21 +1,17 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tesis_app/pages/services_page.dart';
 
-class HomeWidget extends StatefulWidget{
-  final List<QueryDocumentSnapshot> restaurant;
-  final List<QueryDocumentSnapshot> hotel;
-  final List<QueryDocumentSnapshot> siteTur;
-  HomeWidget({this.restaurant, this.hotel, this.siteTur});
-
-  @override
-  _HomeWidgetState createState() => _HomeWidgetState();
-}
-
-class _HomeWidgetState extends State<HomeWidget> {
+class HomeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context){
+    final String restaurant = "restaurante";
+    final String hotel = "hoteles";
+    final String turistico = "lugaresTuristicos";
+
     return Column(
       children: [
         Container(
@@ -41,24 +37,28 @@ class _HomeWidgetState extends State<HomeWidget> {
           crossAxisCount: 2,
           children: [
             cardMenu(
+              context,
               "RESTAURANTES",
               Icons.restaurant,
-              widget.restaurant,
+              restaurant
             ),
             cardMenu(
+              context,
               "HOTELES",
               Icons.hotel,
-              widget.hotel,
+              hotel
             ),
             cardMenu(
+              context,
               "TIENDAS",
               Icons.store,
-              widget.hotel,
+              hotel
             ),
             cardMenu(
+              context,
               "SITIOS TURISTICOS",
               Icons.travel_explore,
-              widget.siteTur,
+              turistico
             ),
           ],
         ),
@@ -67,7 +67,8 @@ class _HomeWidgetState extends State<HomeWidget> {
     );
   }
 
-  GestureDetector cardMenu(String title, IconData icon, List list) {
+  GestureDetector cardMenu(BuildContext context, String title, IconData icon, String nameCollection) {
+    final Stream<QuerySnapshot> _stream = FirebaseFirestore.instance.collection(nameCollection).snapshots();
     return GestureDetector(
       child: Container(
         decoration: BoxDecoration(
@@ -86,13 +87,20 @@ class _HomeWidgetState extends State<HomeWidget> {
           children: [
             Icon(icon, color: Colors.black, size: 60),
             Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-            Text('${list.length} lugares', style: TextStyle(color: Color(0xff898989)),),
+            StreamBuilder(
+              stream: _stream,
+              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot){
+                return snapshot.hasData 
+                ? Text(snapshot.data.docs.length.toString() + " lugares")
+                : Text("0 lugares");
+              }
+            ),
           ],
         ),
       ),
       onTap: () {
         Navigator.push(context, MaterialPageRoute(
-            builder: (context) => ServicesPage(title: title, list: list,)
+            builder: (context) => ServicesPage(title: title, servicesName: nameCollection,)
         ));
       },
     );

@@ -11,66 +11,64 @@ import 'package:flutter_tesis_app/utils/ranking_widget.dart';
 import 'package:flutter_tesis_app/main.dart';
 
 class HomePage extends StatefulWidget {
+  static List<String> likeRest = [];
+  static List<String> likeHot = [];
+  static List<String> likeSite = [];
+
+  static List<String> dislikeRest = [];
+  static List<String> dislikeHot = [];
+  static List<String> dislikeSite = [];
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final CollectionReference restaurant = FirebaseFirestore.instance.collection('restaurante');
-  final CollectionReference hotel = FirebaseFirestore.instance.collection('hoteles');
-  final CollectionReference siteTuri = FirebaseFirestore.instance.collection('lugaresTuristicos');
-
   String userName = "User";
-
   int _selectIndex = 0;
 
-  List<QueryDocumentSnapshot> list = [];
-  List<QueryDocumentSnapshot> listRest = [];
-  List<QueryDocumentSnapshot> listHotel = [];
-  List<QueryDocumentSnapshot> listSiteTur = [];
-  bool loading = true;
+  CollectionReference _refRest = FirebaseFirestore.instance.collection("restaurante");
+  CollectionReference _refHot = FirebaseFirestore.instance.collection("hoteles");
+  CollectionReference _refSite = FirebaseFirestore.instance.collection("lugaresTuristicos");
 
   @override
   void initState() {
-    getCollection();
     userName = FirebaseAuth.instance.currentUser.displayName;
+    getBoolLikes();
     super.initState();
   }
 
-  void getCollection() async {
-    await restaurant.get().then((value) {
+  getBoolLikes()async{
+    await _refRest.get().then((value){
       value.docs.forEach((element) {
-        setState(() {
-          listRest.add(element);
-          list.add(element);
+        setState((){
+          HomePage.likeRest.add("F");
+          HomePage.dislikeRest.add("F");
         });
       });
-    }).catchError((error) => error);
-    await hotel.get().then((value) {
+    });
+    await _refHot.get().then((value){
       value.docs.forEach((element) {
-        setState(() {
-          listHotel.add(element);
-          list.add(element);
+        setState((){
+          HomePage.likeHot.add("F");
+          HomePage.dislikeHot.add("F");
         });
       });
-    }).catchError((error) => error);
-    await siteTuri.get().then((value) {
+    });
+    await _refSite.get().then((value){
       value.docs.forEach((element) {
-        setState(() {
-          listSiteTur.add(element);
-          list.add(element);
-          loading = false;
+        setState((){
+          HomePage.likeSite.add("F");
+          HomePage.dislikeSite.add("F");
         });
       });
-    }).catchError((error) => error);
+    });
   }
+
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> _list = [
-      HomeWidget(hotel: listHotel, restaurant: listRest, siteTur: listSiteTur,),
-      RankingWidget(list: list, loading: loading,),
-    ];
+    List<Widget> _list = [HomeWidget(), RankingWidget(),];
 
     return Scaffold(
       appBar: AppBar(
