@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tesis_app/pages/detail_page.dart';
-import 'package:flutter_tesis_app/utils/loading_screen.dart';
+import 'package:flutter_tesis_app/utils/favorites_widget.dart';
+import 'package:flutter_tesis_app/utils/service_list_widget.dart';
 
 class ServicesPage extends StatefulWidget {
   final String servicesName;
@@ -17,9 +18,50 @@ class ServicesPage extends StatefulWidget {
 }
 
 class _ServicesPageState extends State<ServicesPage> {
+  List<QueryDocumentSnapshot> _list = [];
+  int _selectIndex = 0;
+  List<dynamic> _favList = [];
+
+  void getList()async{
+    CollectionReference _ref = FirebaseFirestore.instance.collection(widget.servicesName);
+    CollectionReference _favorites = FirebaseFirestore.instance.collection('users');
+    final String _userToken = FirebaseAuth.instance.currentUser.uid;
+    
+    await _favorites.get().then((value){
+      value.docs.forEach((element) {
+        if(element['token'] == _userToken){
+          setState(()=> _favList = element['favoritos']);
+        }
+      });
+    });
+    List<QueryDocumentSnapshot> _global = [];
+    await _ref.get().then((value){
+      value.docs.forEach((element) {
+        setState(()=> _global.add(element));
+      });
+    });
+    _global.forEach((element) {
+      if(_favList.contains(element.id)){
+        _list.add(element);
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    getList();
+    super.initState();
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     final Stream<QuerySnapshot> _stream = FirebaseFirestore.instance.collection(widget.servicesName).snapshots();
+
+    List<Widget> _listWidget = [
+      SelectListWidget(serviceName: widget.servicesName, stream: _stream,),
+      FavoritosListWidget(list: _list,)
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -30,72 +72,32 @@ class _ServicesPageState extends State<ServicesPage> {
       ),
       body: SafeArea(
         child: Center(
-          child: StreamBuilder(
-            stream: _stream,
-            builder: (context, AsyncSnapshot<QuerySnapshot> snapshot){
-              if(snapshot.hasData){
-                List<QueryDocumentSnapshot> list = snapshot.data.docs;
-                  return ListView.builder(
-                      padding: EdgeInsets.only(bottom: 20),
-                      itemCount: list.length,
-                      itemBuilder: (context, index) { 
-                        return Container(
-                          margin: EdgeInsets.only(top: 20, left: 20, right: 20),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.5),
-                                blurRadius: 5,
-                                offset: Offset(0, 3),
-                              )
-                            ],
-                          ),
-                          child: ListTile(
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 15),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
-                            leading: Container(
-                              height: 60,
-                              width: 70,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[400],
-                                borderRadius: BorderRadius.circular(10),
-                                image: DecorationImage(
-                                  image: NetworkImage(
-                                    list[index]['images'][0],
-                                  ),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              list[index]['nombre'],
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            trailing:
-                                Text(list[index]['like'].toString() + ' Likes'),
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => DetailPage(
-                                            doc: list[index],
-                                            index: index,
-                                            nameServices: widget.servicesName,
-                                          )));
-                            },
-                          ),
-                        );
-                      });
-              }else{
-                return LoadingScreen();
-              }
-            },
-          ),
+          child: _listWidget[_selectIndex],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.green,
+        unselectedIconTheme: IconThemeData(
+          size: 20,
+        ),
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home, size: 40,),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite, size: 40,),
+            label: 'Favoritos',
+          ),
+        ],
+        currentIndex: _selectIndex,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.yellow[700],
+        onTap: (index){
+          setState(() {
+            _selectIndex = index;
+          });
+        },
       ),
     );
   }

@@ -7,7 +7,7 @@ import 'package:flutter_tesis_app/pages/info_page.dart';
 import 'package:flutter_tesis_app/pages/politics_page.dart';
 import 'package:flutter_tesis_app/pages/profile_page.dart';
 import 'package:flutter_tesis_app/utils/home_widget.dart';
-import 'package:flutter_tesis_app/utils/ranking_widget.dart';
+import 'package:flutter_tesis_app/utils/favorites_widget.dart';
 import 'package:flutter_tesis_app/main.dart';
 
 class HomePage extends StatefulWidget {
@@ -31,14 +31,75 @@ class _HomePageState extends State<HomePage> {
   CollectionReference _refHot = FirebaseFirestore.instance.collection("hoteles");
   CollectionReference _refSite = FirebaseFirestore.instance.collection("lugaresTuristicos");
 
+  final String _userToken = FirebaseAuth.instance.currentUser.uid;
+  CollectionReference _favorites = FirebaseFirestore.instance.collection('users');
+  List<dynamic> _favList = [];
+  List<QueryDocumentSnapshot> _listAllFavoritos = [];
+
+  void getFavoritesList()async {
+    await _favorites.get().then((value){
+      value.docs.forEach((element) {
+        if(element['token'] == _userToken){
+          setState(()=> _favList = element['favoritos']);
+        }
+      });
+    });
+    addFavoriteToList();
+  }
+
+  void addFavoriteToList()async {
+    List<QueryDocumentSnapshot> _global = [];
+    await _refRest.get().then((value){
+      value.docs.forEach((element) {
+        setState(()=> _global.add(element));
+      });
+    });
+    await _refHot.get().then((value){
+      value.docs.forEach((element) {
+        setState(()=> _global.add(element));
+      });
+    });
+    await _refSite.get().then((value){
+      value.docs.forEach((element) {
+        setState(()=> _global.add(element));
+      });
+    });
+    _global.forEach((element) {
+      if(_favList.contains(element.id)){
+        _listAllFavoritos.add(element);
+      }
+    });
+  }
+
   @override
   void initState() {
     userName = FirebaseAuth.instance.currentUser.displayName;
+    getFavoritesList();
     getBoolLikes();
+    createUser();
     super.initState();
   }
 
-  getBoolLikes()async{
+  
+  void createUser()async {
+    CollectionReference _users = FirebaseFirestore.instance.collection('users');
+
+    await _users.where('token', isEqualTo: _userToken).get()
+    .then((value){
+      if(value.docs.isEmpty){
+        _users.add({
+          'token': _userToken,
+          'favoritos': [],
+          'likes': [],
+          'dislikes': []
+        }).then((value) => print("Usuario creado"))
+        .catchError((e)=>print("Error: $e"));
+      }
+    });
+  }
+
+
+  void getBoolLikes()async{
     await _refRest.get().then((value){
       value.docs.forEach((element) {
         setState((){
@@ -68,7 +129,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> _list = [HomeWidget(), RankingWidget(),];
+    List<Widget> _list = [HomeWidget(), FavoritosListWidget(list: _listAllFavoritos),];
 
     return Scaffold(
       appBar: AppBar(
@@ -87,14 +148,17 @@ class _HomePageState extends State<HomePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.green,
+        unselectedIconTheme: IconThemeData(
+          size: 20,
+        ),
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home, size: 40,),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart, size: 40,),
-            label: 'Ranking'
+            icon: Icon(Icons.favorite, size: 40,),
+            label: 'Favoritos',
           ),
         ],
         currentIndex: _selectIndex,

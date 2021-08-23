@@ -1,18 +1,19 @@
-import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tesis_app/pages/services_page.dart';
 
-class HomeWidget extends StatelessWidget {
 
+class HomeWidget extends StatelessWidget {
+  
   @override
   Widget build(BuildContext context){
     final String restaurant = "restaurante";
     final String hotel = "hoteles";
     final String turistico = "lugaresTuristicos";
+    final String tiendas = "tiendas";
 
-    return Column(
+    return Flex(
+      direction: Axis.vertical,
       children: [
         Container(
           padding: const EdgeInsets.only(left: 20, top: 30),
@@ -52,7 +53,7 @@ class HomeWidget extends StatelessWidget {
               context,
               "TIENDAS",
               Icons.store,
-              hotel
+              tiendas
             ),
             cardMenu(
               context,

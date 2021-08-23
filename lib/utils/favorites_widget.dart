@@ -1,57 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tesis_app/pages/detail_page.dart';
-import 'package:flutter_tesis_app/utils/loading_screen.dart';
 
-class RankingWidget extends StatefulWidget {
-  @override
-  _RankingWidgetState createState() => _RankingWidgetState();
-}
-
-class _RankingWidgetState extends State<RankingWidget> {
-  final CollectionReference _rest =
-      FirebaseFirestore.instance.collection("restaurante");
-  final CollectionReference _hotel =
-      FirebaseFirestore.instance.collection("hoteles");
-  final CollectionReference _site =
-      FirebaseFirestore.instance.collection("lugaresTuristicos");
-
-  List<QueryDocumentSnapshot> _list = [];
-  List<QueryDocumentSnapshot> _newList = [];
-
-
-  getList() async {
-    await _rest.get().then((value) => value.docs.forEach((element) {
-          setState(() => _list.add(element));
-        }));
-    await _hotel.get().then((value) => value.docs.forEach((element) {
-          setState(() => _list.add(element));
-        }));
-    await _site.get().then((value) => value.docs.forEach((element) {
-          setState(() => _list.add(element));
-        }));
-    _list.forEach((element) {
-      if(element['like']>=0){
-        print(element['like']);
-      }
-    });
-  }
-
-  @override
-  void initState() {
-    getList();
-    super.initState();
-  }
+class FavoritosListWidget extends StatelessWidget {
+ final List<QueryDocumentSnapshot> list;
+ const FavoritosListWidget({this.list});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: _list.isEmpty
-            ? LoadingScreen()
+        child: list.isEmpty
+            ? Center(
+              child: const Text("Aun no tienes favoritos para esta categoria"),
+            )
             : ListView.builder(
                 padding: EdgeInsets.only(bottom: 20),
-                itemCount: _list.length,
+                itemCount: list.length,
                 itemBuilder: (context, index) {
                   return Container(
                     margin: EdgeInsets.only(top: 20, left: 20, right: 20),
@@ -79,24 +44,24 @@ class _RankingWidgetState extends State<RankingWidget> {
                           borderRadius: BorderRadius.circular(10),
                           image: DecorationImage(
                             image: NetworkImage(
-                              _list[index]['images'][0],
+                              list[index]['images'][0],
                             ),
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
                       title: Text(
-                        _list[index]['nombre'],
+                        list[index]['nombre'],
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       trailing:
-                          Text(_list[index]['like'].toString() + ' Likes'),
+                          Text(list[index]['like'].toString() + ' Likes'),
                       onTap: () {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (_) => DetailPage(
-                                      doc: _list[index],
+                                      doc: list[index],
                                     )));
                       },
                     ),

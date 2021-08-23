@@ -1,11 +1,9 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_tesis_app/pages/home_page.dart';
-
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+
+import 'package:flutter/material.dart';
 
 import 'package:flutter_tesis_app/pages/map_page.dart';
 
@@ -21,6 +19,7 @@ class DetailPage extends StatefulWidget {
 }
 
 class _DetailPageState extends State<DetailPage> {
+  bool favorite = false;
 
   bool like = false;
   bool dislike = false;
@@ -31,62 +30,53 @@ class _DetailPageState extends State<DetailPage> {
   List<dynamic> listImage = [];
   int indexImage = 0;
 
+  
+  final String _userToken = FirebaseAuth.instance.currentUser.uid;
+  CollectionReference _users = FirebaseFirestore.instance.collection('users');
+  QueryDocumentSnapshot _document;
+  List<dynamic> _favoritosUser = [];
+  List<dynamic> _likeUser = [];
+  List<dynamic> _dislikeUser = [];
+
+  void getUserPreferences ()async {
+    await _users.where('token', isEqualTo: _userToken).get().then((value){
+      if(value.docs.isNotEmpty){
+        value.docs.forEach((element) {
+          if(element['token'] == _userToken){
+            setState(()=> _document = element);
+            setState(()=> _favoritosUser = element['favoritos']);
+            setState(()=> _likeUser = element['likes']);
+            setState(()=> _dislikeUser = element['dislikes']);
+            if(_favoritosUser.contains(widget.doc.id)){
+              setState(() => favorite = true);
+            }
+            if(_likeUser.contains(widget.doc.id)){
+              setState(() => like = true);
+            }
+            if(_dislikeUser.contains(widget.doc.id)){
+              setState(() => dislike = true);
+            }
+          }
+        });
+      }
+    });
+  }
+
+
+
   @override
   void initState() {
     likeNum = widget.doc['like'];
     dislikeNum = widget.doc['dislike'];
     listImage = widget.doc['images'];
-    getPref();
+    getUserPreferences();
     super.initState();
   }
 
-  void getPref() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    if(widget.nameServices == "restaurante"){
-      List<String> _likelist = pref.getStringList('likelistRest');
-      List<String> _dislikelist = pref.getStringList('dislikelistRest');
-      if(_likelist != null && _likelist.isNotEmpty && _likelist[widget.index] == "T"){
-        setState(()=> like = true);
-      }else{
-        setState(()=> like = false);
-      }
-      if(_dislikelist != null && _dislikelist.isNotEmpty && _dislikelist[widget.index] == "T"){
-        setState(()=> dislike = true);
-      }else{
-        setState(()=> dislike = false);
-      }
-    }else if(widget.nameServices == "hoteles"){
-      List<String> _likelist = pref.getStringList('likelistHot');
-      List<String> _dislikelist = pref.getStringList('dislikelistHot');
-      if(_likelist != null && _likelist.isNotEmpty && _likelist[widget.index] == "T"){
-        setState(()=> like = true);
-      }else{
-        setState(()=> like = false);
-      }
-      if(_dislikelist != null && _dislikelist.isNotEmpty && _dislikelist[widget.index] == "T"){
-        setState(()=> dislike = true);
-      }else{
-        setState(()=> dislike = false);
-      }
-    }else if(widget.nameServices == "lugaresTuristicos"){
-      List<String> _likelist = pref.getStringList('likelistSite');
-      List<String> _dislikelist = pref.getStringList('dislikelistSite');
-      if(_likelist != null && _likelist.isNotEmpty && _likelist[widget.index] == "T"){
-        setState(()=> like = true);
-      }else{
-        setState(()=> like = false);
-      }
-      if(_dislikelist != null && _dislikelist.isNotEmpty && _dislikelist[widget.index] == "T"){
-        setState(()=> dislike = true);
-      }else{
-        setState(()=> dislike = false);
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
+    final media = MediaQuery.of(context).size;
 
     return Scaffold(
       appBar: AppBar(
@@ -98,9 +88,11 @@ class _DetailPageState extends State<DetailPage> {
       body: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            flex: 1,
-            child: PageView.builder(
+          Container(
+            height: media.height * 0.3,
+            child: Stack(
+              children: [
+                PageView.builder(
                 itemCount: widget.doc['images'].length,
                 onPageChanged: (index){
                   setState(() {
@@ -112,7 +104,7 @@ class _DetailPageState extends State<DetailPage> {
                     color: Colors.grey[400],
                     child: Image.network(
                       widget.doc['images'][index],
-                      width: media.size.width,
+                      width: media.width,
                       fit: BoxFit.cover,
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
@@ -123,6 +115,41 @@ class _DetailPageState extends State<DetailPage> {
                     ),
                   );
                 }),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Container(
+                      height: 60,
+                      width: 60,
+                      margin: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: MaterialButton(
+                        onPressed: (){
+                          setState(()=> favorite = !favorite);
+                          if(favorite){
+                            setState(()=> _favoritosUser.add(widget.doc.id));
+                            _users.doc(_document.id).update({
+                              'favoritos': _favoritosUser
+                            }).then((value) => print("Favorito Agregado"))
+                            .catchError((e)=> e);
+                          }else{
+                            setState(()=> _favoritosUser.remove(widget.doc.id));
+                            _users.doc(_document.id).update({
+                              'favoritos': _favoritosUser
+                            }).then((value) => print("Favorito Borrado"))
+                            .catchError((e)=> e);
+                          }
+                        }, 
+                        child: Icon(Icons.favorite, 
+                          color: favorite ? Colors.red : Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                ),
+              ],
+            ),
           ),
           Container(
             padding: EdgeInsets.symmetric(vertical: 10),
@@ -264,7 +291,7 @@ class _DetailPageState extends State<DetailPage> {
                     height: 10,
                   ),
                   Container(
-                    height: MediaQuery.of(context).size.height * 0.22,
+                    height: MediaQuery.of(context).size.height * 0.23,
                     child: SingleChildScrollView(
                       physics: ScrollPhysics(),
                       child: Text(
@@ -334,70 +361,31 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   void likeTrue()async{
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    if(widget.nameServices == "restaurante"){
-      HomePage.likeRest[widget.index] = "T";
-      await pref.setStringList('likelistRest', HomePage.likeRest);
-      print(HomePage.likeRest);
-    }else if(widget.nameServices == "hoteles"){
-      HomePage.likeHot[widget.index] = "T";
-      await pref.setStringList('likelistHot', HomePage.likeHot);
-      print(HomePage.likeHot);
-    }else if(widget.nameServices == "lugaresTuristicos"){
-      HomePage.likeSite[widget.index] = "T";
-      await pref.setStringList('likelistSite', HomePage.likeSite);
-      print(HomePage.likeSite);
-    }
+    _likeUser.add(widget.doc.id);
+    print(_likeUser);
+    await _users.doc(_document.id).update({
+      'likes': _likeUser
+    }).catchError((e)=> e);
   }
   void likeFalse()async{
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    if(widget.nameServices == "restaurante"){
-      HomePage.likeRest[widget.index] = "F";
-      await pref.setStringList('likelistRest', HomePage.likeRest);
-      print(HomePage.likeRest);
-    }else if(widget.nameServices == "hoteles"){
-      HomePage.likeHot[widget.index] = "F";
-      await pref.setStringList('likelistHot', HomePage.likeHot);
-      print(HomePage.likeHot);
-    }else if(widget.nameServices == "lugaresTuristicos"){
-      HomePage.likeSite[widget.index] = "F";
-      await pref.setStringList('likelistSite', HomePage.likeSite);
-      print(HomePage.likeSite);
-    }
+    _likeUser.remove(widget.doc.id);
+    await _users.doc(_document.id).update({
+      'likes': _likeUser
+    }).catchError((e)=> e);
   }
 
 
   void dislikeTrue()async{
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    if(widget.nameServices == "restaurante"){
-      HomePage.dislikeRest[widget.index] = "T";
-      await pref.setStringList('dislikelistRest', HomePage.dislikeRest);
-      print(HomePage.dislikeRest);
-    }else if(widget.nameServices == "hoteles"){
-      HomePage.dislikeHot[widget.index] = "T";
-      await pref.setStringList('dislikelistHot', HomePage.dislikeHot);
-      print(HomePage.dislikeHot);
-    }else if(widget.nameServices == "lugaresTuristicos"){
-      HomePage.dislikeSite[widget.index] = "T";
-      await pref.setStringList('dislikelistSite', HomePage.dislikeSite);
-      print(HomePage.dislikeSite);
-    }
+    _dislikeUser.add(widget.doc.id);
+    _users.doc(_document.id).update({
+      'dislikes': _dislikeUser
+    }).catchError((e)=> e);
   }
   void dislikeFalse()async{
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    if(widget.nameServices == "restaurante"){
-      HomePage.dislikeRest[widget.index] = "F";
-      await pref.setStringList('dislikelistRest', HomePage.dislikeRest);
-      print(HomePage.dislikeRest);
-    }else if(widget.nameServices == "hoteles"){
-      HomePage.dislikeHot[widget.index] = "F";
-      await pref.setStringList('dislikelistHot', HomePage.dislikeHot);
-      print(HomePage.dislikeHot);
-    }else if(widget.nameServices == "lugaresTuristicos"){
-      HomePage.dislikeSite[widget.index] = "F";
-      await pref.setStringList('dislikelistSite', HomePage.dislikeSite);
-      print(HomePage.dislikeSite);
-    }
+    _dislikeUser.remove(widget.doc.id);
+    await _users.doc(_document.id).update({
+      'dislikes': _dislikeUser
+    }).catchError((e)=> e);
   }
 
 }
