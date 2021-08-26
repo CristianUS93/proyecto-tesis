@@ -21,7 +21,8 @@ class SelectListWidget extends StatelessWidget{
                   : ListView.builder(
                       padding: EdgeInsets.only(bottom: 20),
                       itemCount: list.length,
-                      itemBuilder: (context, index) { 
+                      itemBuilder: (context, index) {
+                        List _images = list[index]['images'];
                         return Container(
                           margin: EdgeInsets.only(top: 20, left: 20, right: 20),
                           decoration: BoxDecoration(
@@ -40,7 +41,13 @@ class SelectListWidget extends StatelessWidget{
                                 horizontal: 15, vertical: 15),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20)),
-                            leading: Container(
+                            leading: _images[0] == ""
+                            ? Container(
+                                height: 60,
+                                width: 70,
+                                child: Icon(Icons.image, size: 40,),
+                              ) 
+                            : Container(
                               height: 60,
                               width: 70,
                               decoration: BoxDecoration(
@@ -48,7 +55,7 @@ class SelectListWidget extends StatelessWidget{
                                 borderRadius: BorderRadius.circular(10),
                                 image: DecorationImage(
                                   image: NetworkImage(
-                                    list[index]['images'][0],
+                                    _images[0],
                                   ),
                                   fit: BoxFit.cover,
                                 ),

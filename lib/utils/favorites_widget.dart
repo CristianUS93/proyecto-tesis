@@ -43,9 +43,11 @@ class FavoritosListWidget extends StatelessWidget {
                           color: Colors.grey[400],
                           borderRadius: BorderRadius.circular(10),
                           image: DecorationImage(
-                            image: NetworkImage(
-                              list[index]['images'][0],
-                            ),
+                            image: list[index]['images'] == [] 
+                              ? Icon(Icons.image) 
+                              : NetworkImage(
+                                list[index]['images'][0],
+                              ),
                             fit: BoxFit.cover,
                           ),
                         ),

@@ -77,7 +77,7 @@ class _DetailPageState extends State<DetailPage> {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context).size;
-
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -93,7 +93,7 @@ class _DetailPageState extends State<DetailPage> {
             child: Stack(
               children: [
                 PageView.builder(
-                itemCount: widget.doc['images'].length,
+                itemCount: listImage.length,
                 onPageChanged: (index){
                   setState(() {
                     indexImage = index;
@@ -102,8 +102,10 @@ class _DetailPageState extends State<DetailPage> {
                 itemBuilder: (context, index) {
                   return Container(
                     color: Colors.grey[400],
-                    child: Image.network(
-                      widget.doc['images'][index],
+                    child: listImage[index] == "" 
+                    ? const Center(child: Text("Imagen no encontrada"))
+                    : Image.network(
+                      listImage[index],
                       width: media.width,
                       fit: BoxFit.cover,
                       loadingBuilder: (context, child, loadingProgress) {
@@ -207,7 +209,7 @@ class _DetailPageState extends State<DetailPage> {
                 child: IconButton(
                     onPressed: () async {
                       await Geolocator.requestPermission().then((value) async {
-                        if (value == LocationPermission.always) {
+                        if (value == LocationPermission.always || value == LocationPermission.whileInUse) {
                           Position position =
                               await Geolocator.getCurrentPosition();
                           Navigator.push(
@@ -291,7 +293,7 @@ class _DetailPageState extends State<DetailPage> {
                     height: 10,
                   ),
                   Container(
-                    height: MediaQuery.of(context).size.height * 0.23,
+                    height: MediaQuery.of(context).size.height * 0.225,
                     child: SingleChildScrollView(
                       physics: ScrollPhysics(),
                       child: Text(
