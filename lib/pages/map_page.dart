@@ -9,9 +9,10 @@ import 'package:flutter_tesis_app/models/directions_model.dart';
 
 // ignore: must_be_immutable
 class MapPage extends StatefulWidget {
+  String nameService;
   Position initPosition;
   LatLng finalPosition;
-  MapPage({@required this.initPosition, @required this.finalPosition});
+  MapPage({@required this.initPosition, @required this.finalPosition, @required this.nameService});
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -32,7 +33,7 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("UBÍCANOS",
+        title: Text(widget.nameService,
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
       ),
@@ -45,6 +46,7 @@ class _MapPageState extends State<MapPage> {
               ),
               myLocationButtonEnabled: true,
               myLocationEnabled: true,
+              mapToolbarEnabled: false,
               onMapCreated: (controller) {},
               markers: {
                 if (_from != null) _from,
@@ -79,7 +81,10 @@ class _MapPageState extends State<MapPage> {
 
       _to = Marker(
         markerId: MarkerId("destination"),
-        infoWindow: InfoWindow(title: "Destino"),
+        infoWindow: InfoWindow(
+          title: widget.nameService, 
+          snippet: "${widget.initPosition.latitude}, ${widget.initPosition.longitude}",
+        ),
         position: latLng,
       );
     });

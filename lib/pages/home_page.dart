@@ -11,13 +11,6 @@ import 'package:flutter_tesis_app/utils/favorites_widget.dart';
 import 'package:flutter_tesis_app/main.dart';
 
 class HomePage extends StatefulWidget {
-  static List<String> likeRest = [];
-  static List<String> likeHot = [];
-  static List<String> likeSite = [];
-
-  static List<String> dislikeRest = [];
-  static List<String> dislikeHot = [];
-  static List<String> dislikeSite = [];
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -75,7 +68,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     userName = FirebaseAuth.instance.currentUser.displayName;
     getFavoritesList();
-    getBoolLikes();
     createUser();
     super.initState();
   }
@@ -95,34 +87,6 @@ class _HomePageState extends State<HomePage> {
         }).then((value) => print("Usuario creado"))
         .catchError((e)=>print("Error: $e"));
       }
-    });
-  }
-
-
-  void getBoolLikes()async{
-    await _refRest.get().then((value){
-      value.docs.forEach((element) {
-        setState((){
-          HomePage.likeRest.add("F");
-          HomePage.dislikeRest.add("F");
-        });
-      });
-    });
-    await _refHot.get().then((value){
-      value.docs.forEach((element) {
-        setState((){
-          HomePage.likeHot.add("F");
-          HomePage.dislikeHot.add("F");
-        });
-      });
-    });
-    await _refSite.get().then((value){
-      value.docs.forEach((element) {
-        setState((){
-          HomePage.likeSite.add("F");
-          HomePage.dislikeSite.add("F");
-        });
-      });
     });
   }
 

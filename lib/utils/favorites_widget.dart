@@ -18,6 +18,7 @@ class FavoritosListWidget extends StatelessWidget {
                 padding: EdgeInsets.only(bottom: 20),
                 itemCount: list.length,
                 itemBuilder: (context, index) {
+                  List images = list[index]['images'];
                   return Container(
                     margin: EdgeInsets.only(top: 20, left: 20, right: 20),
                     decoration: BoxDecoration(
@@ -36,18 +37,22 @@ class FavoritosListWidget extends StatelessWidget {
                           EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20)),
-                      leading: Container(
+                      leading: images[0] == "" 
+                      ? Container(
+                        height: 60,
+                        width: 70,
+                        child: Icon(Icons.image),
+                      )
+                      : Container(
                         height: 60,
                         width: 70,
                         decoration: BoxDecoration(
                           color: Colors.grey[400],
                           borderRadius: BorderRadius.circular(10),
                           image: DecorationImage(
-                            image: list[index]['images'] == [] 
-                              ? Icon(Icons.image) 
-                              : NetworkImage(
-                                list[index]['images'][0],
-                              ),
+                            image: NetworkImage(
+                              images[0],
+                            ),
                             fit: BoxFit.cover,
                           ),
                         ),

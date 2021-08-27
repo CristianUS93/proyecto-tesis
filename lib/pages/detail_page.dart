@@ -216,6 +216,7 @@ class _DetailPageState extends State<DetailPage> {
                               context,
                               MaterialPageRoute(
                                   builder: (_) => MapPage(
+                                        nameService: widget.doc['nombre'],
                                         initPosition: position,
                                         finalPosition: LatLng(
                                           widget.doc['latitud'],
@@ -275,7 +276,7 @@ class _DetailPageState extends State<DetailPage> {
               ),
               height: MediaQuery.of(context).size.height * 0.27,
               width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
               margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,10 +293,8 @@ class _DetailPageState extends State<DetailPage> {
                   SizedBox(
                     height: 10,
                   ),
-                  Container(
-                    height: MediaQuery.of(context).size.height * 0.225,
+                  Expanded(
                     child: SingleChildScrollView(
-                      physics: ScrollPhysics(),
                       child: Text(
                         widget.doc['descripcion'] == ""
                             ? "Aún no se agreaga una descripción"
