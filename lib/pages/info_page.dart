@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class InfoPage extends StatelessWidget{
   @override
@@ -14,12 +15,19 @@ class InfoPage extends StatelessWidget{
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(height: 60,),
+            SizedBox(height: 20,),
+            const Text("Desarrolladores",
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 50,),
             DeveloperInfo(
               developerName: "CRISTIAN UCAÑÁN",
               city: "Trujillo - Perú",
               imageName: "assets/foto1.jpg",
               size: _size,
+              facebookUrl: "https://www.facebook.com/cristian.ucanansanchez",
+              linkedinUrl: "https://www.linkedin.com/in/cristian-uca%C3%B1%C3%A1n-832894108",
+              twitterUrl: "https://twitter.com/cristian_ucanan?s=08",
             ),
             SizedBox(height: 50),
             DeveloperInfo(
@@ -27,6 +35,9 @@ class InfoPage extends StatelessWidget{
               city: "Huaráz - Perú",
               imageName: "assets/foto2.jpg",
               size: _size,
+              facebookUrl: "https://www.facebook.com/jenner.condex",
+              linkedinUrl: "https://www.linkedin.com/in/jenner-conco-dextre-71420b186",
+              twitterUrl: "https://twitter.com/JennerConDex?s=09",
             ),
           ],
         ),
@@ -43,12 +54,18 @@ class DeveloperInfo extends StatelessWidget {
     this.imagePath,
     @required this.imageName,
     @required this.size,
+    @required this.facebookUrl,
+    @required this.linkedinUrl,
+    @required this.twitterUrl,
   }) : super(key: key);
   final String developerName;
   final String city;
   final String imagePath;
   final String imageName;
   final Size size;
+  final String facebookUrl;
+  final String twitterUrl;
+  final String linkedinUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -82,9 +99,18 @@ class DeveloperInfo extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SocialLogo(imagePath: "assets/facebook.png",),
-                  SocialLogo(imagePath: "assets/linkedin.png",),
-                  SocialLogo(imagePath: "assets/twitter.png",),
+                  SocialLogo(
+                    imagePath: "assets/facebook.png",
+                    url: facebookUrl,
+                  ),
+                  SocialLogo(
+                    imagePath: "assets/linkedin.png",
+                    url: linkedinUrl,
+                  ),
+                  SocialLogo(
+                    imagePath: "assets/twitter.png",
+                    url: twitterUrl,
+                  ),
                 ],
               ),
             ],
@@ -110,25 +136,30 @@ class SocialLogo extends StatelessWidget {
   const SocialLogo({
     Key key,
     @required this.imagePath,
+    @required this.url
   }) : super(key: key);
   final String imagePath;
+  final String url;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 50,
-      width: 50,
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [BoxShadow(
-          color: Colors.black.withOpacity(0.3),
-          offset: Offset(0,2),
-          blurRadius: 5,
-        )]
+    return InkWell(
+      onTap: ()=> launch(url),
+      child: Container(
+        height: 50,
+        width: 50,
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            offset: Offset(0,2),
+            blurRadius: 5,
+          )]
+        ),
+        child: Image.asset(imagePath, color: Colors.blue,),
       ),
-      child: Image.asset(imagePath, color: Colors.blue,),
     );
   }
 }
