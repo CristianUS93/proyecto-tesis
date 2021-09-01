@@ -20,13 +20,16 @@ class DirectionsRepository {
       queryParameters: {
         'origin': '${origin.latitude},${origin.longitude}',
         'destination': '${destination.latitude},${destination.longitude}',
-        'key': "AIzaSyCtKzWTkjPDczKtUzAxZX9mPHR1Wc_ekgg",
+        'key': "AIzaSyBJKt2N1qc4x8ymvoSZRLZ-gX7VqA46odM",
       },
     );
 
     if (response.statusCode == 200) {
+      print(">>>>>>>>> 200");
       return Directions.fromMap(response.data);
+    }else{
+      print(">>>>>>>>> null");
+      return null;
     }
-    return null;
   }
 }
