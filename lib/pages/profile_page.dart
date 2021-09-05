@@ -9,7 +9,7 @@ class ProfilePage extends StatelessWidget{
     return Scaffold(
       appBar: AppBar(
         title: const Text("MI PERFIL",
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
       ),
       body: Center(
@@ -42,7 +42,7 @@ class ProfilePage extends StatelessWidget{
                   Text(_user.displayName,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 25,
+                      fontSize: 22,
                     ),
                   ),
                   Text("Usuario",
@@ -57,7 +57,7 @@ class ProfilePage extends StatelessWidget{
                   Text(_user.email,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 25,
+                      fontSize: 22,
                     ),
                   ),
                   Text("Correo",

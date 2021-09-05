@@ -82,7 +82,7 @@ class _DetailPageState extends State<DetailPage> {
       appBar: AppBar(
         title: Text(
           widget.doc['nombre'],
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
       ),
       body: Column(
@@ -167,7 +167,7 @@ class _DetailPageState extends State<DetailPage> {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Text(
               widget.doc['nombre'],
-              style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
           ),
           Row(

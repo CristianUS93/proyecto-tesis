@@ -38,7 +38,7 @@ class _MapPageState extends State<MapPage> {
       appBar: AppBar(
         title: Text(
           widget.nameService,
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
       ),
       body: Stack(

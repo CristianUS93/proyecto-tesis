@@ -9,7 +9,7 @@ class InfoPage extends StatelessWidget{
     return Scaffold(
       appBar: AppBar(
         title: const Text("INFORMACIÓN",
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
       ),
       body: SafeArea(
@@ -17,9 +17,10 @@ class InfoPage extends StatelessWidget{
           children: [
             SizedBox(height: 20,),
             const Text("Desarrolladores",
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 50,),
+            SizedBox(height: 30,),
+            /*
             DeveloperInfo(
               developerName: "CRISTIAN UCAÑÁN",
               city: "Trujillo - Perú",
@@ -30,6 +31,7 @@ class InfoPage extends StatelessWidget{
               twitterUrl: "https://twitter.com/cristian_ucanan?s=08",
             ),
             SizedBox(height: 50),
+            */
             DeveloperInfo(
               developerName: "JENNER CONCO",
               city: "Huaráz - Perú",
